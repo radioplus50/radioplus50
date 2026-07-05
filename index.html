@@ -1,39 +1,29 @@
-<!doctype html>
-<html lang="pl">
-<head>
-  <meta charset="utf-8">
-  <title>RADIO PLUS 50</title>
-</head>
-
-<body style="background:black;color:white;font-family:monospace;text-align:center;">
-
-<h1>RADIO PLUS 50</h1>
-<p>Archiwum narracji biograficznych</p>
-
-<button onclick="start()">START</button>
-<button onclick="stop()">STOP</button>
-
 <script>
 let texts = [];
 let i = 0;
 let running = false;
 let timer = null;
 
-/* 🔊 polski TTS */
+let voices = [];
+
+/* 🔧 WAŻNE: wymuszenie załadowania głosów */
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+}
+
+/* 🔊 TTS tylko PL */
 function speak(text) {
   speechSynthesis.cancel();
 
   const u = new SpeechSynthesisUtterance(text);
 
-  const voices = speechSynthesis.getVoices();
+  loadVoices();
 
-  // wybieramy tylko polski głos jeśli istnieje
-  const plVoice =
-    voices.find(v => v.lang && v.lang.includes("pl")) ||
-    voices.find(v => v.lang && v.lang.includes("PL"));
+  // SZUKAMY TYLKO POLSKICH GŁOSÓW
+  const plVoices = voices.filter(v => v.lang && v.lang.toLowerCase().includes("pl"));
 
-  if (plVoice) {
-    u.voice = plVoice;
+  if (plVoices.length > 0) {
+    u.voice = plVoices[Math.floor(Math.random() * plVoices.length)];
   }
 
   u.lang = "pl-PL";
@@ -43,25 +33,18 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-/* 📦 ładowanie narracji */
+/* 📦 JSON */
 async function loadNarrations() {
-  try {
-    const res = await fetch('narracje.json?v=' + Date.now());
-    const data = await res.json();
-
-    texts = data.map(x => x.tekst);
-  } catch (e) {
-    texts = ["błąd ładowania archiwum narracji"];
-    console.log(e);
-  }
+  const res = await fetch('narracje.json?v=' + Date.now());
+  const data = await res.json();
+  texts = data.map(x => x.tekst);
 }
 
-/* 🔁 emisja */
+/* 🔁 loop */
 function loop() {
-  if (!running || texts.length === 0) return;
+  if (!running || !texts.length) return;
 
   speak(texts[i]);
-
   i = (i + 1) % texts.length;
 }
 
@@ -74,10 +57,12 @@ async function start() {
 
   speechSynthesis.cancel();
 
+  loadVoices();
+
   await loadNarrations();
 
   loop();
-  timer = setInterval(loop, 4000);
+  timer = setInterval(loop, 4500);
 }
 
 /* ⛔ stop */
@@ -87,9 +72,7 @@ function stop() {
   speechSynthesis.cancel();
 }
 
-/* 🔧 inicjalizacja głosów */
-speechSynthesis.getVoices();
+/* 🔧 WAŻNE: Chrome voice fix */
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
 </script>
-
-</body>
-</html>
