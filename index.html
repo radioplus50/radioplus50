@@ -8,19 +8,59 @@
 <body style="background:black;color:white;font-family:monospace;text-align:center;">
 
 <h1>RADIO PLUS 50</h1>
-<p>TTS TEST</p>
+<p>emisja trwa...</p>
 
 <button onclick="start()">START</button>
+<button onclick="stop()">STOP</button>
 
 <script>
-function start() {
-  const u = new SpeechSynthesisUtterance("radio plus pięćdziesiąt działa");
+let i = 0;
+let running = false;
+let timer = null;
+
+const texts = [
+  "radio start",
+  "jeden",
+  "dwa",
+  "trzy",
+  "cztery",
+  "pięć",
+  "emisja trwa"
+];
+
+function speak(text) {
+  const u = new SpeechSynthesisUtterance(text);
   u.lang = "pl-PL";
-  u.rate = 0.9;
+  u.rate = 0.85;
   speechSynthesis.speak(u);
+}
+
+function loop() {
+  if (!running) return;
+
+  speak(texts[i]);
+
+  i = (i + 1) % texts.length;
+}
+
+function start() {
+  if (running) return;
+  running = true;
+
+  speechSynthesis.cancel();
+
+  setTimeout(() => {
+    loop();
+    timer = setInterval(loop, 3000);
+  }, 300);
+}
+
+function stop() {
+  running = false;
+  clearInterval(timer);
+  speechSynthesis.cancel();
 }
 </script>
 
 </body>
 </html>
-
