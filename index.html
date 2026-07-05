@@ -8,7 +8,7 @@
 <body style="background:black;color:white;font-family:monospace;text-align:center;">
 
 <h1>RADIO PLUS 50</h1>
-<p>emisja narracyjna</p>
+<p>200-głosowa emisja narracyjna</p>
 
 <button onclick="start()">START</button>
 <button onclick="stop()">STOP</button>
@@ -18,29 +18,30 @@ let i = 0;
 let running = false;
 let timer = null;
 
-const texts = [
-  "głos pierwszy",
-  "pamięć pierwsza",
-  "obraz bez obrazu",
-  "jestem tutaj",
-  "nie wiem czy to trwa",
-  "słyszenie",
-  "powrót",
-  "cisza mówi",
-  "fragment",
-  "echo",
-  "ślad obecności",
-  "narracja trwa"
-];
+/* 🧠 200 głosów */
+const texts = Array.from({ length: 200 }, (_, i) => {
+  return `głos ${i + 1}: jestem tutaj`;
+});
 
+/* 🔊 TTS z losowym głosem */
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = "pl-PL";
-  u.rate = 0.85;
-  u.pitch = 1;
+
+  const voices = speechSynthesis.getVoices();
+
+  if (voices.length > 0) {
+    const v = voices[Math.floor(Math.random() * voices.length)];
+    u.voice = v;
+  }
+
+  u.lang = Math.random() > 0.5 ? "pl-PL" : "en-US";
+  u.rate = 0.7 + Math.random() * 0.6;
+  u.pitch = 0.4 + Math.random() * 1.2;
+
   speechSynthesis.speak(u);
 }
 
+/* 🔁 emisja */
 function loop() {
   if (!running) return;
 
@@ -49,18 +50,21 @@ function loop() {
   i = (i + 1) % texts.length;
 }
 
+/* ▶ start */
 function start() {
   if (running) return;
   running = true;
 
   speechSynthesis.cancel();
+  speechSynthesis.getVoices();
 
   setTimeout(() => {
     loop();
-    timer = setInterval(loop, 3000);
+    timer = setInterval(loop, 2000);
   }, 300);
 }
 
+/* ⛔ stop */
 function stop() {
   running = false;
   clearInterval(timer);
