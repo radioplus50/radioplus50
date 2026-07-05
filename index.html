@@ -8,7 +8,7 @@
 <body style="background:black;color:white;font-family:monospace;text-align:center;">
 
 <h1>RADIO PLUS 50</h1>
-<p>emisja trwa...</p>
+<p>emisja narracyjna</p>
 
 <button onclick="start()">START</button>
 <button onclick="stop()">STOP</button>
@@ -19,19 +19,25 @@ let running = false;
 let timer = null;
 
 const texts = [
-  "radio start",
-  "jeden",
-  "dwa",
-  "trzy",
-  "cztery",
-  "pięć",
-  "emisja trwa"
+  "głos pierwszy",
+  "pamięć pierwsza",
+  "obraz bez obrazu",
+  "jestem tutaj",
+  "nie wiem czy to trwa",
+  "słyszenie",
+  "powrót",
+  "cisza mówi",
+  "fragment",
+  "echo",
+  "ślad obecności",
+  "narracja trwa"
 ];
 
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "pl-PL";
   u.rate = 0.85;
+  u.pitch = 1;
   speechSynthesis.speak(u);
 }
 
