@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="pl">
 <head>
   <meta charset="utf-8">
   <title>RADIO PLUS 50</title>
@@ -8,34 +8,63 @@
 <body style="background:black;color:white;font-family:monospace;text-align:center;">
 
 <h1>RADIO PLUS 50</h1>
-<p>tryb awaryjny</p>
+<p>radio narracyjne PL</p>
 
 <button onclick="start()">START</button>
 <button onclick="stop()">STOP</button>
 
 <script>
+let texts = [
+  "test radio działa",
+  "archiwum narracji uruchomione",
+  "pamięć głosów",
+  "emisja trwa"
+];
+
 let i = 0;
 let running = false;
 let timer = null;
 
-const texts = ["radio działa", "test", "emergency mode"];
-
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
+
+  const voices = speechSynthesis.getVoices();
+
+  // tylko polskie głosy
+  const plVoices = voices.filter(v =>
+    v.lang && v.lang.toLowerCase().includes("pl")
+  );
+
+  if (plVoices.length > 0) {
+    u.voice = plVoices[0];
+  }
+
   u.lang = "pl-PL";
+  u.rate = 0.85;
+  u.pitch = 0.9;
+
   speechSynthesis.speak(u);
 }
 
 function loop() {
   if (!running) return;
+
   speak(texts[i]);
+
   i = (i + 1) % texts.length;
 }
 
 function start() {
+  if (running) return;
+
   running = true;
+  i = 0;
+
+  speechSynthesis.cancel();
+  speechSynthesis.getVoices();
+
   loop();
-  timer = setInterval(loop, 3000);
+  timer = setInterval(loop, 3500);
 }
 
 function stop() {
@@ -43,6 +72,9 @@ function stop() {
   clearInterval(timer);
   speechSynthesis.cancel();
 }
+
+// preload voices
+speechSynthesis.getVoices();
 </script>
 
 </body>
