@@ -1,18 +1,26 @@
 <!doctype html>
 <html>
+<head>
+  <meta charset="utf-8">
+  <title>RADIO PLUS 50</title>
+</head>
+
 <body style="background:black;color:white;font-family:monospace;text-align:center;">
 
-<h1>TEST TTS</h1>
+<h1>RADIO PLUS 50</h1>
+<p>TTS TEST</p>
 
-<button onclick="speak()">START</button>
+<button onclick="start()">START</button>
 
 <script>
-function speak() {
-  const u = new SpeechSynthesisUtterance("jeden dwa trzy");
+function start() {
+  const u = new SpeechSynthesisUtterance("radio plus pięćdziesiąt działa");
   u.lang = "pl-PL";
+  u.rate = 0.9;
   speechSynthesis.speak(u);
 }
 </script>
 
 </body>
 </html>
+
