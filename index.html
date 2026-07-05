@@ -1,28 +1,23 @@
 <script>
 let texts = [];
-let i = 0;
 let running = false;
-let timer = null;
+let index = 0;
 
-let voices = [];
-
-/* 🔧 WAŻNE: wymuszenie załadowania głosów */
-function loadVoices() {
-  voices = speechSynthesis.getVoices();
+/* 📦 JSON */
+async function loadNarrations() {
+  const res = await fetch('narracje.json?v=' + Date.now());
+  const data = await res.json();
+  texts = data.map(x => x.tekst);
 }
 
-/* 🔊 TTS tylko PL */
+/* 🔊 TTS bez zabijania kolejki */
 function speak(text) {
-  speechSynthesis.cancel();
-
   const u = new SpeechSynthesisUtterance(text);
 
-  loadVoices();
+  const voices = speechSynthesis.getVoices();
+  const plVoices = voices.filter(v => v.lang && v.lang.includes("pl"));
 
-  // SZUKAMY TYLKO POLSKICH GŁOSÓW
-  const plVoices = voices.filter(v => v.lang && v.lang.toLowerCase().includes("pl"));
-
-  if (plVoices.length > 0) {
+  if (plVoices.length) {
     u.voice = plVoices[Math.floor(Math.random() * plVoices.length)];
   }
 
@@ -33,19 +28,22 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-/* 📦 JSON */
-async function loadNarrations() {
-  const res = await fetch('narracje.json?v=' + Date.now());
-  const data = await res.json();
-  texts = data.map(x => x.tekst);
-}
+/* 🔁 STREAM (ważne: async + delay per głos) */
+async function stream() {
+  if (!running) return;
 
-/* 🔁 loop */
-function loop() {
-  if (!running || !texts.length) return;
+  if (!texts.length) return;
 
-  speak(texts[i]);
-  i = (i + 1) % texts.length;
+  const text = texts[index];
+
+  speak(text);
+
+  index = (index + 1) % texts.length;
+
+  // losowy rytm = radio, nie pętla
+  const delay = 3000 + Math.random() * 4000;
+
+  setTimeout(stream, delay);
 }
 
 /* ▶ start */
@@ -53,26 +51,18 @@ async function start() {
   if (running) return;
 
   running = true;
-  i = 0;
-
-  speechSynthesis.cancel();
-
-  loadVoices();
+  index = 0;
 
   await loadNarrations();
 
-  loop();
-  timer = setInterval(loop, 4500);
+  stream();
 }
 
 /* ⛔ stop */
 function stop() {
   running = false;
-  clearInterval(timer);
   speechSynthesis.cancel();
 }
 
-/* 🔧 WAŻNE: Chrome voice fix */
-speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices();
+speechSynthesis.onvoiceschanged = () => {};
 </script>
