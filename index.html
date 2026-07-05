@@ -1,3 +1,18 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>RADIO PLUS 50</title>
+</head>
+
+<body style="background:black;color:white;font-family:monospace;text-align:center;">
+
+<h1>RADIO PLUS 50</h1>
+<p>tryb stabilny PL</p>
+
+<button onclick="start()">START</button>
+<button onclick="stop()">STOP</button>
+
 <script>
 let texts = [
   "test radio działa",
@@ -10,33 +25,22 @@ let i = 0;
 let running = false;
 let timer = null;
 
-/* 🔊 BLOKADA OBCEGO TTS */
+/* 🔊 ULTRA STABILNY TTS */
 function speak(text) {
-  speechSynthesis.cancel(); // KLUCZ: zabija wszystko co zalega
+  speechSynthesis.cancel();
 
   const u = new SpeechSynthesisUtterance(text);
 
-  const voices = speechSynthesis.getVoices();
-
-  // tylko polskie + twardy wybór
-  const plVoices = voices.filter(v =>
-    v.lang && v.lang.toLowerCase().startsWith("pl")
-  );
-
-  if (plVoices.length > 0) {
-    u.voice = plVoices[0];
-  } else {
-    // jeśli brak PL, NIE pozwalamy EN fallback
-    console.warn("Brak polskiego głosu!");
-    return;
-  }
-
+  // NIE pobieramy voices → unikamy chaosu Chrome
   u.lang = "pl-PL";
   u.rate = 0.85;
   u.pitch = 0.9;
 
-  u.onend = () => {
-    // zapobiega nakładaniu się głosów
+  // blokada dziwnych fallbacków
+  u.voice = null;
+
+  u.onerror = (e) => {
+    console.log("TTS error:", e);
   };
 
   speechSynthesis.speak(u);
@@ -59,10 +63,9 @@ function start() {
   i = 0;
 
   speechSynthesis.cancel();
-  speechSynthesis.getVoices();
 
   loop();
-  timer = setInterval(loop, 4000);
+  timer = setInterval(loop, 4500);
 }
 
 /* ⛔ stop */
@@ -71,8 +74,7 @@ function stop() {
   clearInterval(timer);
   speechSynthesis.cancel();
 }
-
-// init voices
-speechSynthesis.onvoiceschanged = () => {};
-speechSynthesis.getVoices();
 </script>
+
+</body>
+</html>
