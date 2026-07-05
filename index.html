@@ -1,8 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>RADIO PLUS 50</title>
+</head>
+
+<body style="background:black;color:white;font-family:monospace;text-align:center;">
+
+<h1>RADIO PLUS 50</h1>
+<p>tryb awaryjny</p>
+
+<button onclick="start()">START</button>
+<button onclick="stop()">STOP</button>
+
 <script>
-let texts = ["radio działa", "test 1", "test 2"];
 let i = 0;
 let running = false;
 let timer = null;
+
+const texts = ["radio działa", "test", "emergency mode"];
 
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
@@ -28,3 +44,6 @@ function stop() {
   speechSynthesis.cancel();
 }
 </script>
+
+</body>
+</html>
