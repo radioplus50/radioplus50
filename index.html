@@ -1,68 +1,30 @@
 <script>
-let texts = [];
+let texts = ["radio działa", "test 1", "test 2"];
+let i = 0;
 let running = false;
-let index = 0;
+let timer = null;
 
-/* 📦 JSON */
-async function loadNarrations() {
-  const res = await fetch('narracje.json?v=' + Date.now());
-  const data = await res.json();
-  texts = data.map(x => x.tekst);
-}
-
-/* 🔊 TTS bez zabijania kolejki */
 function speak(text) {
   const u = new SpeechSynthesisUtterance(text);
-
-  const voices = speechSynthesis.getVoices();
-  const plVoices = voices.filter(v => v.lang && v.lang.includes("pl"));
-
-  if (plVoices.length) {
-    u.voice = plVoices[Math.floor(Math.random() * plVoices.length)];
-  }
-
   u.lang = "pl-PL";
-  u.rate = 0.85;
-  u.pitch = 0.9;
-
   speechSynthesis.speak(u);
 }
 
-/* 🔁 STREAM (ważne: async + delay per głos) */
-async function stream() {
+function loop() {
   if (!running) return;
-
-  if (!texts.length) return;
-
-  const text = texts[index];
-
-  speak(text);
-
-  index = (index + 1) % texts.length;
-
-  // losowy rytm = radio, nie pętla
-  const delay = 3000 + Math.random() * 4000;
-
-  setTimeout(stream, delay);
+  speak(texts[i]);
+  i = (i + 1) % texts.length;
 }
 
-/* ▶ start */
-async function start() {
-  if (running) return;
-
+function start() {
   running = true;
-  index = 0;
-
-  await loadNarrations();
-
-  stream();
+  loop();
+  timer = setInterval(loop, 3000);
 }
 
-/* ⛔ stop */
 function stop() {
   running = false;
+  clearInterval(timer);
   speechSynthesis.cancel();
 }
-
-speechSynthesis.onvoiceschanged = () => {};
 </script>
