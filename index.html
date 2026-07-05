@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="pl">
 <head>
   <meta charset="utf-8">
   <title>RADIO PLUS 50</title>
@@ -8,7 +8,7 @@
 <body style="background:black;color:white;font-family:monospace;text-align:center;">
 
 <h1>RADIO PLUS 50</h1>
-<p>archiwum narracji</p>
+<p>Archiwum narracji biograficznych</p>
 
 <button onclick="start()">START</button>
 <button onclick="stop()">STOP</button>
@@ -19,27 +19,41 @@ let i = 0;
 let running = false;
 let timer = null;
 
-/* 🔊 TTS */
+/* 🔊 polski TTS */
 function speak(text) {
+  speechSynthesis.cancel();
+
   const u = new SpeechSynthesisUtterance(text);
 
   const voices = speechSynthesis.getVoices();
-  if (voices.length) {
-    u.voice = voices[Math.floor(Math.random() * voices.length)];
+
+  // wybieramy tylko polski głos jeśli istnieje
+  const plVoice =
+    voices.find(v => v.lang && v.lang.includes("pl")) ||
+    voices.find(v => v.lang && v.lang.includes("PL"));
+
+  if (plVoice) {
+    u.voice = plVoice;
   }
 
-  u.rate = 0.8 + Math.random() * 0.4;
-  u.pitch = 0.5 + Math.random() * 0.8;
-  u.lang = Math.random() > 0.5 ? "pl-PL" : "en-US";
+  u.lang = "pl-PL";
+  u.rate = 0.85;
+  u.pitch = 0.9;
 
   speechSynthesis.speak(u);
 }
 
 /* 📦 ładowanie narracji */
 async function loadNarrations() {
-  const res = await fetch('./narracje.json');
-  const data = await res.json();
-  texts = data.map(x => x.tekst);
+  try {
+    const res = await fetch('narracje.json?v=' + Date.now());
+    const data = await res.json();
+
+    texts = data.map(x => x.tekst);
+  } catch (e) {
+    texts = ["błąd ładowania archiwum narracji"];
+    console.log(e);
+  }
 }
 
 /* 🔁 emisja */
@@ -47,6 +61,7 @@ function loop() {
   if (!running || texts.length === 0) return;
 
   speak(texts[i]);
+
   i = (i + 1) % texts.length;
 }
 
@@ -58,12 +73,11 @@ async function start() {
   i = 0;
 
   speechSynthesis.cancel();
-  speechSynthesis.getVoices();
 
   await loadNarrations();
 
   loop();
-  timer = setInterval(loop, 2500);
+  timer = setInterval(loop, 4000);
 }
 
 /* ⛔ stop */
@@ -72,6 +86,9 @@ function stop() {
   clearInterval(timer);
   speechSynthesis.cancel();
 }
+
+/* 🔧 inicjalizacja głosów */
+speechSynthesis.getVoices();
 </script>
 
 </body>
