@@ -2,46 +2,86 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Radio Plus 50</title>
+  <title>Radio Plus 50 AI</title>
   <style>
     body {
       background: black;
       color: white;
       font-family: Arial;
       text-align: center;
-      margin-top: 80px;
+      margin-top: 60px;
     }
     button {
-      font-size: 20px;
+      font-size: 18px;
       padding: 10px 20px;
       margin: 10px;
+    }
+    #status {
+      margin-top: 20px;
+      color: #0f0;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>📻 RADIO PLUS 50</h1>
+<h1>📻 RADIO PLUS 50 AI</h1>
 
-  <button onclick="play()">▶ PLAY</button>
-  <button onclick="stop()">⏸ STOP</button>
+<button onclick="startRadio()">▶ START RADIO AI</button>
+<button onclick="stopRadio()">⏸ STOP</button>
 
-  <audio id="radio" preload="none">
-    <source src="https://stream-uk1.radioparadise.com/mp3-128" type="audio/mpeg">
-  </audio>
+<p id="status">Status: STOP</p>
 
-  <script>
-    const radio = document.getElementById("radio");
+<script>
+let running = false;
 
-    function play() {
-      radio.play();
+// 🎙️ Twoje „audycje”
+const scripts = [
+  "Witamy w Radio Plus 50. To jest głos sztucznej inteligencji.",
+  "Dziś transmitujemy spokojny strumień narracji i pamięci.",
+  "Każdy głos jest śladem obecności. Każde słowo jest archiwum.",
+  "Radio Plus 50 kontynuuje emisję. Bez przerwy. Bez końca.",
+  "Liczenie rozpoczyna się teraz. Jeden. Dwa. Trzy. Cztery. Pięć."
+];
+
+function speak(text) {
+  return new Promise(resolve => {
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "pl-PL";
+    msg.rate = 0.9;
+
+    msg.onend = resolve;
+    speechSynthesis.speak(msg);
+  });
+}
+
+async function loop() {
+  while (running) {
+    for (let i = 0; i < scripts.length; i++) {
+      if (!running) break;
+      document.getElementById("status").innerText =
+        "Status: ODTWARZAM -> " + scripts[i];
+
+      await speak(scripts[i]);
+
+      await new Promise(r => setTimeout(r, 500));
     }
+  }
+}
 
-    function stop() {
-      radio.pause();
-      radio.currentTime = 0;
-    }
-  </script>
+function startRadio() {
+  if (running) return;
+  running = true;
+  document.getElementById("status").innerText = "Status: START";
+  loop();
+}
+
+function stopRadio() {
+  running = false;
+  speechSynthesis.cancel();
+  document.getElementById("status").innerText = "Status: STOP";
+}
+</script>
 
 </body>
 </html>
